@@ -18,7 +18,7 @@ minggunya. Versi lebih dalam dan teknis dari konten yang tayang di platform.
 | W4 | AI & Produktivitas | ✅ Selesai | [ai-productivity/ai-productivity-notes.md](ai-productivity/ai-productivity-notes.md) |
 | W5 | IT Career & Fresh Graduate | ✅ Selesai | [career/it-career-notes.md](career/it-career-notes.md) |
 | W6 | Networking Pendalaman (Siklus 2) | ✅ Selesai | [networking/week6-networking-pendalaman.md](networking/week6-networking-pendalaman.md) |
-| W7 | Website & Web Dev Pendalaman | 🔲 Belum dimulai | — |
+| W7 | Website & Web Dev Pendalaman | ✅ Selesai | — | [web-dev/week7-webdev-pendalaman.md](web-dev/week7-webdev-pendalaman.md) |
 | W8 | Cybersecurity Pendalaman | 🔲 Belum dimulai | — |
 | W9 | AI & Produktivitas Pendalaman | 🔲 Belum dimulai | — |
 | W10 | IT Career Pendalaman | 🔲 Belum dimulai | — |
