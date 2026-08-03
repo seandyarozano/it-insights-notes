@@ -1,0 +1,84 @@
+# Internet Satelit (LEO) vs Fiber Optik — Catatan Teknis
+
+> Repo tujuan: `seandyarozano/it-insights-notes`, folder `networking/`
+> Terkait konten sosial minggu ini (IT Insights — Siklus 2, topik Starlink), tapi ditulis lebih dalam/teknis, bukan copy-paste dari LinkedIn/IG/Threads.
+
+## Ringkasan Konsep
+
+Internet satelit generasi baru (LEO — *Low Earth Orbit*, dipakai Starlink) berbeda secara fundamental dari internet kabel (fiber optik) dan dari internet satelit generasi lama (GEO — *Geostationary Earth Orbit*) dalam tiga hal: **latency**, **kapasitas/skalabilitas**, dan **model penambahan infrastruktur**.
+
+| Aspek | Fiber Optik | Starlink (LEO) | Satelit Lama (GEO) |
+|---|---|---|---|
+| Ketinggian/jarak | Jalur darat/bawah laut | ±550 km | ±35.786 km |
+| Latency teoretis (1 hop, fisika dasar) | ~5 ms / 1.000 km | ~3,7 ms | ~238,7 ms |
+| Latency nyata yang umum dilaporkan | ~5–20 ms | ~25–50 ms *(perlu verifikasi lanjut, lihat catatan di bawah)* | ~600 ms+ *(perlu verifikasi lanjut)* |
+| Cara menambah kapasitas | Upgrade perangkat di kedua ujung kabel | Luncurkan satelit baru | Luncurkan satelit baru |
+| Kecepatan penambahan kapasitas | Cepat, tanpa infrastruktur fisik baru | Lambat & mahal (bergantung jadwal peluncuran roket) | Lambat & mahal |
+| Use case ideal | Perkotaan, area padat penduduk | Daerah 3T, kapal, lokasi tambang, mobile | Sudah banyak digantikan LEO |
+
+**Catatan akurasi:** angka "latency nyata" di atas adalah angka yang umum dikutip di industri (bukan hasil pengukuran langsung atau riset primer di sesi ini). Untuk klaim presisi, sebaiknya diverifikasi ke laporan resmi Starlink (starlink.com) atau benchmark independen (mis. Ookla Speedtest Intelligence).
+
+## Kenapa Kapasitas Starlink Lebih Kaku Dibanding Fiber
+
+Fiber optik bisa terus ditambah kapasitasnya dengan mengupgrade perangkat di kedua ujung kabel (transceiver, DWDM, dst.) — infrastruktur fisik kabelnya sendiri tidak perlu diganti. Starlink sebaliknya: kapasitas totalnya dibatasi oleh jumlah satelit yang benar-benar mengorbit dan melintas di suatu wilayah pada waktu tertentu. Ini yang menyebabkan Starlink resmi berhenti menerima pelanggan baru di Indonesia pada 13 Juli 2025 karena kapasitas habis terjual — sampai ada satelit tambahan diluncurkan, kapasitas tidak bisa ditambah secara instan.
+
+Sumber: [Bisnis.com, 18 Juli 2025](https://teknologi.bisnis.com/read/20250718/101/1894145/di-balik-starlink-stop-layani-pelanggan-baru-ritel-dan-korporasi-berebut-kapasitas) — mengutip pernyataan resmi Starlink dan analisis Agung Harsoyo (pakar telekomunikasi ITB).
+
+## Perhitungan Latency (Fisika Dasar)
+
+Latency minimum teoretis untuk satu kali perjalanan sinyal (naik ke satelit, turun lagi ke bumi) dihitung dengan:
+
+```
+latency_ms = (jarak_km * 2) / kecepatan_cahaya_km_per_s * 1000
+```
+
+Dengan kecepatan cahaya di ruang hampa `c ≈ 299.792,458 km/s`:
+
+```python
+c_vacuum = 299792.458  # km/s
+
+def one_hop_ms(altitude_km, speed=c_vacuum):
+    dist = altitude_km * 2  # naik + turun
+    return dist / speed * 1000
+
+print(one_hop_ms(550))     # LEO (Starlink)   -> ~3.67 ms
+print(one_hop_ms(35786))   # GEO (satelit lama) -> ~238.74 ms
+```
+
+Untuk fiber optik, cahaya merambat lebih lambat dari kecepatan di ruang hampa karena index bias kaca (~1,5), jadi kecepatan efektifnya:
+
+```python
+c_fiber = c_vacuum / 1.5   # ≈ 199.862 km/s
+# artinya ±5 ms latency teoretis per 1.000 km jalur fiber satu arah
+```
+
+**Penting:** ini angka minimum teoretis berdasarkan hukum fisika (kecepatan cahaya), bukan angka latency nyata di lapangan. Latency nyata selalu lebih tinggi karena ada proses routing, antrian di router, jarak ke ground station, dan overhead protokol jaringan.
+
+## Command untuk Cek Sendiri
+
+Buat yang mau coba ukur latency koneksi sendiri (fiber, Starlink, atau lainnya):
+
+```bash
+# Cek rata-rata round-trip time (RTT) ke server publik
+ping -c 10 8.8.8.8
+
+# Lihat jalur/hop yang dilewati paket data
+traceroute 8.8.8.8      # Linux/Mac
+tracert 8.8.8.8         # Windows
+```
+
+Perhatikan kolom `avg` di output `ping` — itu perkiraan RTT (round-trip, jadi 2x latency satu arah). Untuk koneksi fiber biasa di kota besar Indonesia, wajar kalau angkanya di bawah 30ms ke server domestik. Untuk koneksi satelit, angkanya biasanya lebih tinggi dan fluktuasinya (jitter) juga lebih besar.
+
+## Statistik Pendukung
+
+- Lebih dari 99% trafik data antarbenua (*intercontinental*) dunia mengalir lewat kabel serat optik bawah laut, bukan satelit. Dikonfirmasi langsung oleh TeleGeography, firma riset infrastruktur telekomunikasi. Sumber: [TeleGeography — Do Submarine Cables Account For Over 99% of Intercontinental Data Traffic?](https://resources.telegeography.com/2023-mythbusting-part-3)
+
+## Link Referensi
+
+Kedua link di bawah sudah dicek aktif per sesi riset ini (Agustus 2026):
+
+- https://teknologi.bisnis.com/read/20250718/101/1894145/di-balik-starlink-stop-layani-pelanggan-baru-ritel-dan-korporasi-berebut-kapasitas
+- https://resources.telegeography.com/2023-mythbusting-part-3
+
+---
+*Bagian dari IT Insights — @seandyarozano. Ditulis untuk melengkapi konten sosial minggu ini dengan versi yang lebih teknis.*
